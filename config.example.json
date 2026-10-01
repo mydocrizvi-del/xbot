@@ -3,7 +3,7 @@
 
   "handle": "yourhandle_without_the_at",
   "premium": false,
-  "max_chars": 280,
+  "max_chars": 280,\n\n  "approval_mode": "manual",\n  "_approval_mode_hint": "manual = drafts must be explicitly approved before the scheduler sees them; auto = filled drafts are immediately eligible",
 
   "timezone": "local",
   "_timezone_hint": "e.g. 'Asia/Kolkata', 'America/New_York', or 'local' for the machine's timezone",
