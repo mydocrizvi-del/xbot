@@ -81,7 +81,8 @@ def make_plan(date: str | None = None) -> dict:
             "slot": anchor,
             "kind": "ai_update" if anchor == ai_slot and c.get("ai_update_enabled", True) else "value",
             "due_at": when.isoformat(),
-            "text": "", "image": None, "posted": False, "tweet_url": None,\n            "approved": str(c.get("approval_mode", "manual")).lower() == "auto",
+            "text": "", "image": None, "posted": False, "tweet_url": None,
+            "approved": str(c.get("approval_mode", "manual")).lower() == "auto",
         })
     plan = {"date": day.strftime("%Y-%m-%d"), "created_at": now_tz().isoformat(),
             "handle": c.get("handle", ""), "slots": slots}
