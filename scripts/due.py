@@ -132,6 +132,8 @@ def due(max_lag: float = MAX_LAG_HOURS) -> dict | None:
         for slot in plan.get("slots", []):
             if slot.get("posted") or slot.get("slot") in done:
                 continue
+            if str(settings.load().get("approval_mode", "manual")).lower() == "manual" and not slot.get("approved"):
+                continue
             if not (slot.get("text") or "").strip():
                 continue                      # not written yet - not our problem
             try:
@@ -201,8 +203,10 @@ def main() -> None:
             for s in plan["slots"]:
                 if s.get("posted"):
                     mark = "POSTED"
+                elif s.get("text") and s.get("approved"):
+                    mark = "approved"
                 elif s.get("text"):
-                    mark = "ready"
+                    mark = "pending review"
                 else:
                     mark = "empty"
                 print(f"  {s['slot']:>5} {s['kind']:<9} due {s['due_at'][11:16]}  {mark}")
@@ -215,6 +219,24 @@ def main() -> None:
             return
         d["tick"] = tick()
         print(json.dumps(d, ensure_ascii=False))
+        return
+
+    if a.cmd == "approve":
+        if not a.slot:
+            raise SystemExit("--slot required")
+        touched = []
+        for path, plan in _load_plans():
+            for slot in plan.get("slots", []):
+                if slot.get("slot") != a.slot or slot.get("posted"):
+                    continue
+                if not (slot.get("text") or "").strip():
+                    raise SystemExit("cannot approve an empty draft")
+                slot["approved"] = True
+                slot["reviewed_at"] = now_tz().isoformat()
+                touched.append(path.name)
+                path.write_text(json.dumps(plan, indent=2, ensure_ascii=False), encoding="utf-8")
+                break
+        print(json.dumps({"cmd": "approve", "slot": a.slot, "updated": touched}))
         return
 
     if a.cmd in ("fill", "mark"):
@@ -252,6 +274,7 @@ def main() -> None:
                     continue
                 if a.cmd == "fill":
                     s["text"] = text
+                    s["approved"] = str(c.get("approval_mode", "manual")).lower() == "auto"
                     if a.image:
                         s["image"] = a.image
                 else:
