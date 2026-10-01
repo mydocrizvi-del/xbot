@@ -407,3 +407,35 @@ listed in `config.example.json`; be a good citizen with them.
 
 If you build something with this, the credit it actually wants is a real post
 that a real person found useful.
+
+## XBot v2 — control plane
+
+The repository now includes a dependency-free review and operations layer:
+
+    python scripts/validate_config.py
+    python scripts/due.py make-plan
+    python scripts/review.py list
+    python scripts/review.py approve --slot 16:00
+    python scripts/dashboard.py
+    # open http://127.0.0.1:8787
+
+### Approval-first scheduling
+
+`approval_mode` is now available in `config.json`:
+
+- `manual` (default): a draft must be explicitly approved before `due.py check` can return it to the scheduler.
+- `auto`: filled drafts become eligible immediately.
+
+Manual approval is the recommended default for a new deployment.
+
+### Duplicate-content warning
+
+`review.py` compares a draft against recent recorded posts using normalized text similarity. A high-similarity match is surfaced before approval so repeated content can be reviewed.
+
+### Dashboard
+
+`dashboard.py` uses only the Python standard library and binds to `127.0.0.1` by default. It provides a lightweight view of today's queue and lets you approve or reject drafts. It intentionally does not expose a publish endpoint.
+
+### Platform note
+
+X's current automation rules state that non-API-based automation such as scripting the X website can result in account enforcement. The original browser publisher remains in this repository for compatibility, but review/approval and conservative operation are recommended. See X's current automation rules before enabling any automated publishing.
